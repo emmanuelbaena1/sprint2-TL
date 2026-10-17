@@ -1,0 +1,10 @@
+{
+  "description": "A comprehensive logistics tracking system enabling clients, operators, supervisors, and admins to monitor shipments, manage roles, and track delivery stages securely.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
