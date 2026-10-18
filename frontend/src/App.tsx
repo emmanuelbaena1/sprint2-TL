@@ -192,7 +192,7 @@ function Shell({ role, user, token, onLogout }: { role: Role; user: ApiUser; tok
   const title = menus[role].find((item) => item.page === page)?.label || "Trackline";
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 3000); };
   const openTracking = (trackingId: string) => { setSelectedTrackingId(trackingId); setPage("tracking"); };
-  return <div className="app-shell"><aside className="sidebar"><Brand/><nav>{menus[role].map((item) => <button className={page === item.page ? "nav-item active" : "nav-item"} key={item.page} onClick={() => { if (item.page === "tracking") setSelectedTrackingId(""); setPage(item.page); }}><Icon name={item.icon}/><span>{item.label}</span></button>)}</nav><div className="sidebar-security"><Icon name="shield"/><div><b>Sesión protegida</b><span>Cierre automático tras 5 min sin actividad</span></div></div><button className="logout" onClick={onLogout}><Icon name="logout"/> Cerrar sesión</button></aside><div className="app-area"><header className="topbar"><div><div className="breadcrumb">Trackline <span>/</span> {title}</div></div><div className="top-actions"><div className="divider"/><div className="user-block"><div className="avatar">{user.fullName.split(" ").map((part) => part[0]).slice(0,2).join("")}</div><div><b>{user.fullName}</b><span>{role}</span></div><Icon name="chevron" size={15}/></div></div></header><main className="content">{page === "dashboard" && <Dashboard role={role} token={token} go={setPage} onTracking={openTracking}/>} {page === "shipments" && <Shipments role={role} go={setPage} notify={notify} token={token} onTracking={openTracking}/>} {page === "tracking" && <Tracking role={role} token={token} initialTrackingId={selectedTrackingId}/>} {page === "profile" && <Profile role={role} notify={notify} token={token}/>} {page === "new" && <NewShipment notify={notify} token={token}/>} {page === "groups" && <Groups notify={notify} token={token}/>} {page === "event" && <EventRegistration notify={notify} token={token}/>} {page === "users" && <SupervisorUsers go={setPage}/>} {page === "transit" && <PendingReport type="transit"/>} {page === "delays" && <PendingReport type="delays"/>} {page === "volume" && <Volume/>} {page === "roles" && <Roles notify={notify} token={token}/>} {page === "blocked" && <Blocked notify={notify} token={token}/>} {page === "audit" && <Audit/>} {page === "whatsapp" && <Whatsapp/>}</main></div>{toast && <div className="toast"><span><Icon name="check"/></span><div><b>Operación completada</b><small>{toast}</small></div></div>}</div>;
+  return <div className="app-shell"><aside className="sidebar"><Brand/><nav>{menus[role].map((item) => <button className={page === item.page ? "nav-item active" : "nav-item"} key={item.page} onClick={() => { if (item.page === "tracking") setSelectedTrackingId(""); setPage(item.page); }}><Icon name={item.icon}/><span>{item.label}</span></button>)}</nav><div className="sidebar-security"><Icon name="shield"/><div><b>Sesión protegida</b><span>Cierre automático tras 5 min sin actividad</span></div></div><button className="logout" onClick={onLogout}><Icon name="logout"/> Cerrar sesión</button></aside><div className="app-area"><header className="topbar"><div><div className="breadcrumb">Trackline <span>/</span> {title}</div></div><div className="top-actions"><div className="divider"/><div className="user-block"><div className="avatar">{user.fullName.split(" ").map((part) => part[0]).slice(0,2).join("")}</div><div><b>{user.fullName}</b><span>{role}</span></div><Icon name="chevron" size={15}/></div></div></header><main className="content">{page === "dashboard" && <Dashboard role={role} token={token} go={setPage} onTracking={openTracking}/>} {page === "shipments" && <Shipments role={role} go={setPage} notify={notify} token={token} onTracking={openTracking}/>} {page === "tracking" && <Tracking role={role} token={token} initialTrackingId={selectedTrackingId}/>} {page === "profile" && <Profile role={role} notify={notify} token={token}/>} {page === "new" && <NewShipment notify={notify} token={token}/>} {page === "groups" && <Groups notify={notify} token={token}/>} {page === "event" && <EventRegistration notify={notify} token={token}/>} {page === "users" && <SupervisorUsers token={token} onTracking={openTracking}/>} {page === "transit" && <PendingReport type="transit"/>} {page === "delays" && <PendingReport type="delays"/>} {page === "volume" && <Volume/>} {page === "roles" && <Roles notify={notify} token={token}/>} {page === "blocked" && <Blocked notify={notify} token={token}/>} {page === "audit" && <Audit/>} {page === "whatsapp" && <Whatsapp/>}</main></div>{toast && <div className="toast"><span><Icon name="check"/></span><div><b>Operación completada</b><small>{toast}</small></div></div>}</div>;
 }
 
 function Dashboard({ role, token, go, onTracking }: { role: Role; token: string; go: (page: string) => void; onTracking: (trackingId: string) => void }) {
@@ -288,11 +288,52 @@ function Profile({ role, notify, token }: { role: Role; notify: (message: string
   const changed = Boolean(profile && (address.trim() !== profile.address || cityCountry.trim() !== profile.cityCountry));
   return <><PageTitle eyebrow="HU-06 · Perfil" title="Mi perfil" description="Consulta tus datos y actualiza tu dirección y ciudad-país."/>{loading ? <Card><div className="loading-state">Cargando perfil...</div></Card> : profile ? <Card><div className="form-grid two"><Input label="Nombre completo" value={profile.fullName} disabled/><Input label="Correo electrónico" value={profile.email} disabled/><Input label="Identificación" value={profile.identification} disabled/><Input label="Rol" value={role} disabled/><Input label="Dirección" value={address} onChange={(value) => setAddress(value)} placeholder="Tu dirección"/><Input label="Ciudad - país" value={cityCountry} onChange={(value) => setCityCountry(value)} placeholder="Ej. Medellín - Colombia"/></div>{profile.createdAt && <div className="security-note">Cuenta creada: {new Date(profile.createdAt).toLocaleDateString()}</div>}{error && <div className="alert alert-error" role="alert">{error}</div>}<div className="form-actions"><Button onClick={save} disabled={saving || !changed || !address.trim() || !cityCountry.trim()}>{saving ? "Guardando…" : "Guardar cambios"}</Button></div></Card> : <Card><EmptyState icon="user" title="No pudimos cargar el perfil" description={error || "Vuelve a intentarlo."}/></Card>}</>;
 }
-function SupervisorUsers({ go }: { go: (page: string) => void }) {
-  const [users,setUsers]=useState<{id:number;fullName:string;identification:string;email:string}[]>([]);
-  useEffect(()=>{const raw=localStorage.getItem("tracking-session");if(!raw)return;const token=(JSON.parse(raw) as {token:string}).token;api<typeof users>("/supervisor/users-with-shipments",token).then(setUsers).catch(()=>setUsers([]));},[]);
-  return <><PageTitle eyebrow="HU-13 · Solo Supervisor" title="Envíos por usuario" description="Asociación mediante la identificación del destinatario."/><Card>{users.length?<Table headers={["Usuario","Identificación","Correo",""]}>{users.map(user=><tr key={user.id}><td><strong>{user.fullName}</strong></td><td>{user.identification}</td><td>{user.email}</td><td><Button variant="ghost" icon="eye" onClick={()=>go("tracking")}>Consultar envío</Button></td></tr>)}</Table>:<EmptyState icon="people" title="No hay usuarios con envíos asociados" description="La lista se forma con las cuentas cuya identificación coincide con destinatarios registrados."/>}</Card></>;
+function SupervisorUsers({ token, onTracking }: { token: string; onTracking: (trackingId: string) => void }) {
+  type UserRow = { id: number; fullName: string; identification: string; email: string };
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [selected, setSelected] = useState<UserRow | null>(null);
+  const [shipments, setShipments] = useState<ShipmentApi[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    api<UserRow[]>("/supervisor/users-with-shipments", token).then(setUsers).catch(() => setUsers([]));
+  }, [token]);
+  const open = async (user: UserRow) => {
+    setSelected(user); setShipments([]); setError(""); setLoading(true);
+    try { setShipments(await api<ShipmentApi[]>(`/supervisor/users/${encodeURIComponent(user.identification)}/shipments`, token)); }
+    catch (e) { setError(e instanceof Error ? e.message : "No se pudieron cargar los envíos."); }
+    finally { setLoading(false); }
+  };
+  return <>
+    <PageTitle eyebrow="HU-13 · Solo Supervisor" title="Envíos por usuario" description="Asociación mediante la identificación del destinatario."/>
+    <Card>
+      {users.length ? <Table headers={["Usuario","Identificación","Correo",""]}>
+        {users.map(user => <tr key={user.id}>
+          <td><strong>{user.fullName}</strong></td><td>{user.identification}</td><td>{user.email}</td>
+          <td><Button variant="ghost" icon="eye" onClick={() => void open(user)}>Consultar envíos</Button></td>
+        </tr>)}
+      </Table> : <EmptyState icon="people" title="No hay usuarios con envíos asociados" description="La lista se forma con las cuentas cuya identificación coincide con destinatarios registrados."/>}
+    </Card>
+    {selected && <Card>
+      <div className="card-header"><div><div className="card-title">Envíos de {selected.fullName}</div><div className="card-subtitle">Identificación {selected.identification}</div></div><Badge>{loading ? "…" : shipments.length}</Badge></div>
+      {loading ? <div className="loading-state">Cargando envíos...</div>
+          : error ? <div className="alert alert-error" role="alert">{error}</div>
+              : shipments.length ? <Table headers={["Seguimiento","Destinatario","Destino","Estado actual","Creado",""]}>
+                    {shipments.map(s => <tr key={s.trackingId}>
+                      <td><strong>{s.trackingId}</strong></td><td>{s.recipientName}</td><td>{s.recipientAddress}</td>
+                      <td><Badge tone={statusTone(statusFromApi(s.status))}>{statusFromApi(s.status)}</Badge></td>
+                      <td>{new Date(s.createdAt).toLocaleString()}</td>
+                      <td><Button variant="ghost" icon="eye" onClick={() => onTracking(s.trackingId)}>Ver tracking</Button></td>
+                    </tr>)}
+                  </Table>
+                  : <EmptyState icon="package" title="Este usuario no tiene envíos" description="No hay envíos cuyo destinatario tenga esta identificación."/>}
+    </Card>}
+  </>;
 }
+
+
+
+
 function PendingReport({ type }: { type: "transit" | "delays" }) {
   const transit = type === "transit";
   return <><PageTitle eyebrow={transit ? "HU-14 · Indicador operativo" : "HU-15 · Excepciones"} title={transit ? "Tiempos de tránsito" : "Envíos con retraso"} description="Acceso exclusivo para Supervisor Logístico."/ ><Card><EmptyState icon={transit ? "clock" : "warning"} title={transit ? "Cálculo pendiente de definición" : "Regla de retraso pendiente de definición"} description={transit ? "El archivo no fija el instante inicial, final ni las etapas usadas en el cálculo. No se muestra una fórmula para evitar inventar una regla." : "El archivo no establece fecha estimada de entrega ni condición objetiva de retraso. La lista estará disponible cuando se defina la regla."}/></Card><div className="alert alert-info"><Icon name="shield"/><div><strong>Diseño preparado para el refinamiento</strong><span>{transit ? "Cuando se definan los eventos necesarios, aquí se mostrará el tiempo transcurrido por envío." : "Cuando exista una condición oficial, aquí aparecerán únicamente los envíos que la cumplan."}</span></div></div></>;
