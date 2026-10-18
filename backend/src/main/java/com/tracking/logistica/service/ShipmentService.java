@@ -19,6 +19,7 @@ public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final UserRepository userRepository;
+    private final AccessAuditService accessAuditService;
     private final ShipmentEventRepository shipmentEventRepository;
     private final LogisticCenterRepository logisticCenterRepository;
     private final ShipmentGroupRepository shipmentGroupRepository;
@@ -59,10 +60,16 @@ public class ShipmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         if (user.getRole() == Role.CLIENTE &&
                 !user.getIdentification().equals(shipment.getRecipientIdentification())) {
+            accessAuditService.logDenied(userEmail, trackingId, "CLIENTE_NO_ES_DESTINATARIO");
             throw new ResourceNotFoundException("Envío no encontrado con el código: " + trackingId);
+
         }
 
         return mapToResponse(shipment);
+    }
+    public java.util.List<ShipmentResponse> getShipmentsByRecipientIdentification(String identification) {
+        return shipmentRepository.findByRecipientIdentification(identification)
+                .stream().map(this::mapToResponse).toList();
     }
 
     public java.util.List<ShipmentResponse> getMyShipments(String email) {

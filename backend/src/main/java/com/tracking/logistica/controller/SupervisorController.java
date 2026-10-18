@@ -20,4 +20,8 @@ public class SupervisorController {
     @GetMapping("/logistic-centers") public ResponseEntity<List<LogisticCenter>> logisticCenters() { return ResponseEntity.ok(centers.findByActiveTrue()); }
     @GetMapping("/volume") public ResponseEntity<Long> volume() { return ResponseEntity.ok(userService.shipmentCount()); }
     @GetMapping("/shipments/in-delivery") public ResponseEntity<List<ShipmentResponse>> shipmentsInDelivery() { return ResponseEntity.ok(shipmentService.getShipmentsInDelivery()); }
+    @GetMapping("/users/{identification}/shipments")
+    public ResponseEntity<List<ShipmentResponse>> shipmentsByUser(@PathVariable String identification) {
+        return ResponseEntity.ok(shipmentService.getShipmentsByRecipientIdentification(identification));
+    }
 }
